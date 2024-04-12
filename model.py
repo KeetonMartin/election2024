@@ -17,7 +17,8 @@ filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], format='%Y
 
 # Pivot data to compare Trump and Biden in each row
 pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='pct', aggfunc='max')
-pivot_data['differential'] = pivot_data['Donald Trump'] - pivot_data['Joe Biden']
+pivot_data = pivot_data.fillna(0)  # Fill missing values with 0
+pivot_data['differential'] = pivot_data.get('Donald Trump', 0) - pivot_data.get('Joe Biden', 0)
 pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
 
 # Get the latest poll for each state
