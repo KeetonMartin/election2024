@@ -24,6 +24,13 @@ pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump'
 # Get the latest poll for each state
 latest_polls = pivot_data.groupby('state').last().reset_index()
 
+# Check if Hawaii is in the latest polls, if not, assume it goes for Joe Biden
+if 'Hawaii' not in latest_polls['state'].values:
+    hawaii_data = {'state': 'Hawaii', 'end_date': pd.to_datetime('2024-11-04'), 'Donald Trump': 0, 'Joe Biden': 100,
+                   'differential': -100, 'winner': 'Joe Biden'}
+    hawaii_df = pd.DataFrame([hawaii_data])
+    latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
+
 # Electoral votes mapping
 electoral_votes = {
     'Alabama': 9, 'Alaska': 3, 'Arizona': 11, 'Arkansas': 6,
@@ -76,6 +83,9 @@ state_abbreviations = {
     'Utah': 'UT', 'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA',
     'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
 }
+
+# Check Hawaii's data
+print(latest_polls[latest_polls['state'] == 'Hawaii'])
 
 # Map full state names to abbreviations
 latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
