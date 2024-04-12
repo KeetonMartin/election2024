@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 # Load the dataset
 file_path = './data/president_polls.csv'
@@ -57,4 +58,35 @@ plt.xlabel('States')
 plt.ylabel('Electoral Votes')
 plt.show()
 
-electoral_summary
+print(electoral_summary)
+
+# State abbreviation mapping
+state_abbreviations = {
+    'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
+    'California': 'CA', 'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE',
+    'District of Columbia': 'DC', 'Florida': 'FL', 'Georgia': 'GA', 'Hawaii': 'HI',
+    'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+    'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME',
+    'Maryland': 'MD', 'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN',
+    'Mississippi': 'MS', 'Missouri': 'MO', 'Montana': 'MT', 'Nebraska': 'NE',
+    'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM',
+    'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+    'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI',
+    'South Carolina': 'SC', 'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX',
+    'Utah': 'UT', 'Vermont': 'VT', 'Virginia': 'VA', 'Washington': 'WA',
+    'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+}
+
+# Map full state names to abbreviations
+latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
+
+# Update Plotly visualization with state codes
+fig = px.choropleth(latest_polls,
+                    locations='state_code',  # Use state abbreviations
+                    locationmode="USA-states",
+                    color='winner',
+                    hover_name='state',
+                    color_discrete_map={'Donald Trump': 'red', 'Joe Biden': 'blue'},
+                    scope="usa",
+                    title='2024 Electoral College Prediction')
+fig.show()
