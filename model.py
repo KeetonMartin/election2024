@@ -12,8 +12,7 @@ filtered_data = poll_data[relevant_columns]
 filtered_data = filtered_data[filtered_data['candidate_name'].isin(candidates)]
 
 # Convert 'end_date' to datetime
-# Specify the format if you know it, e.g., '%Y-%m-%d'
-filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], format='%Y-%m-%d', errors='coerce')
+filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], errors='coerce')
 
 # Pivot data to compare Trump and Biden in each row
 pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='pct', aggfunc='max')
@@ -50,6 +49,7 @@ electoral_summary = latest_polls.groupby('winner')['electoral_votes'].sum()
 # Visualization
 color_map = latest_polls['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
 states = latest_polls['state'].tolist()
+plt.figure(figsize=(12, 6))
 plt.bar(states, latest_polls['electoral_votes'], color=color_map)
 plt.xticks(rotation=90)  # Rotate state labels for better visibility
 plt.title('2024 Electoral College Prediction')
@@ -57,4 +57,4 @@ plt.xlabel('States')
 plt.ylabel('Electoral Votes')
 plt.show()
 
-print(electoral_summary)
+electoral_summary
