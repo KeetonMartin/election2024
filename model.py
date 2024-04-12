@@ -11,8 +11,8 @@ candidates = ['Donald Trump', 'Joe Biden']
 filtered_data = poll_data[relevant_columns]
 filtered_data = filtered_data[filtered_data['candidate_name'].isin(candidates)]
 
-# Convert 'end_date' to datetime
-filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], errors='coerce')
+# Convert 'end_date' to datetime with the correct format
+filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], format='%m/%d/%y', errors='coerce')
 
 # Pivot data to compare Trump and Biden in each row
 pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='pct', aggfunc='max')
