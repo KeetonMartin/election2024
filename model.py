@@ -50,6 +50,19 @@ latest_polls = pivot_data.groupby('state').last().reset_index()
 #     hawaii_df = pd.DataFrame([hawaii_data])
 #     latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
 
+# Assumption for the District of Columbia
+if 'District of Columbia' not in latest_polls['state'].values:
+    dc_data = {
+        'state': 'District of Columbia',
+        'end_date': pd.to_datetime('2024-11-04'),  # use your latest relevant date
+        'Donald Trump': 0,
+        'Joe Biden': 100,
+        'differential': -100,
+        'winner': 'Joe Biden'
+    }
+    dc_df = pd.DataFrame([dc_data])
+    latest_polls = pd.concat([latest_polls, dc_df], ignore_index=True)
+
 # Assumption for Nebraska's Congressional Districts
 ne_districts = ['Nebraska CD-1', 'Nebraska CD-2', 'Nebraska CD-3']
 
@@ -119,8 +132,8 @@ state_abbreviations = {
     'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
 }
 
-# Check Nebraska's data
-print(latest_polls[latest_polls['state'] == 'Maine CD-1'])
+# Check one state or district's data
+# print(latest_polls[latest_polls['state'] == 'Maine CD-1'])
 
 # Map full state names to abbreviations
 latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
