@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 from assumptions import apply_polling_assumptions
+from utils import format_hover_text
 
 # Load the dataset
 file_path = './data/president_polls3.csv'
@@ -101,22 +102,42 @@ state_abbreviations = {
 }
 
 # Check one state or district's data
-# print(latest_polls[latest_polls['state'] == 'Maine CD-1'])
+print(latest_polls[latest_polls['state'] == 'Wisconsin'])
+
+# Cap the 'differential' at -30 and 30
+latest_polls['capped_diff'] = latest_polls['differential'].clip(-30, 30)
+
+# Normalize the capped differential from 0 to 1 for color mapping
+# The minimum is -30 and maximum is 30
+latest_polls['normalized_capped_diff'] = (latest_polls['capped_diff'] + 30) / 60  # This shifts and scales the values
+
+# Create a custom color scale that reflects the differential magnitude
+color_scale = [
+    [0.0, "blue"],   # Favors Biden strongly
+    [0.5, "white"],  # Neutral
+    [1.0, "red"]     # Favors Trump strongly
+]
 
 # Map full state names to abbreviations
 latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
 
-# Update Plotly visualization with state codes
-fig = px.choropleth(latest_polls,
-                    locations='state_code',  # Use state abbreviations
-                    locationmode="USA-states",
-                    color='winner',
-                    hover_name='state',
-                    color_discrete_map={'Donald Trump': 'red', 'Joe Biden': 'blue'},
-                    scope="usa",
-                    title='2024 Electoral College Prediction')
+# Prepare the hover text with enhanced details
+latest_polls['hover_text'] = latest_polls.apply(format_hover_text, axis=1)
 
-# Set dark theme
+# Update Plotly visualization with capped differential colors and enhanced hover information
+fig = px.choropleth(
+    latest_polls,
+    locations='state_code',  # Use state abbreviations
+    locationmode="USA-states",
+    color='normalized_capped_diff',  # Use normalized capped differential for coloring
+    hover_name='hover_text',  # Use custom hover text
+    color_continuous_scale=color_scale,  # Use the updated color scale
+    scope="usa",
+    title='2024 Electoral College Prediction'
+)
+
+# Set dark theme and adjust color bar title
 fig.update_layout(template='plotly_dark')
+fig.update_layout(coloraxis_colorbar=dict(title="Polling Differential"))
 
 fig.show()
