@@ -16,7 +16,6 @@ poll_data['end_date'] = pd.to_datetime(poll_data['end_date'], format='%m/%d/%y',
 today = pd.Timestamp('today')
 
 # Define a function to calculate weights based on the age of the poll
-# Using exponential decay, where weight decreases by half every 180 days (half-life)
 def calculate_weight(end_date):
     days_passed = (today - end_date).days
     return 0.5 ** (days_passed / 180)
@@ -33,20 +32,25 @@ filtered_data = filtered_data[filtered_data['candidate_name'].isin(candidates)]
 # Calculate weighted percentages
 filtered_data['weighted_pct'] = filtered_data['pct'] * filtered_data['weight']
 
-# Pivot data to compare Trump and Biden in each row, summing weighted percentages
-pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='weighted_pct', aggfunc='sum')
+# Group by state and candidate, then calculate the sum of weighted percentages and sum of weights
+grouped_data = filtered_data.groupby(['state', 'candidate_name']).agg(
+    total_weighted_pct=('weighted_pct', 'sum'),
+    total_weight=('weight', 'sum')
+).reset_index()
+
+# Calculate the weighted average
+grouped_data['weighted_avg_pct'] = grouped_data['total_weighted_pct'] / grouped_data['total_weight']
 
 # Pivot data to compare Trump and Biden in each row
-pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='pct', aggfunc='max')
-pivot_data = pivot_data.fillna(0)  # Fill missing values with 0
-# Calculate differential and determine the winner with weighted percentages
-pivot_data['differential'] = pivot_data.get('Donald Trump', 0) - pivot_data.get('Joe Biden', 0)
-pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
+pivot_avg_data = grouped_data.pivot_table(index='state', columns='candidate_name', values='weighted_avg_pct', aggfunc='max')
+pivot_avg_data.fillna(0, inplace=True)
 
-# Get the latest poll for each state
-latest_polls = pivot_data.groupby('state').last().reset_index()
+# Calculate differential and determine the winner with weighted averages
+pivot_avg_data['differential'] = pivot_avg_data.get('Donald Trump', 0) - pivot_avg_data.get('Joe Biden', 0)
+pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
 
-latest_polls = apply_polling_assumptions(latest_polls)
+# Apply polling assumptions
+pivot_avg_data = apply_polling_assumptions(pivot_avg_data)
 
 # Electoral votes mapping, adjusted for district-based voting in Nebraska and Maine
 electoral_votes = {
@@ -65,24 +69,26 @@ electoral_votes = {
     'West Virginia': 4, 'Wisconsin': 10, 'Wyoming': 3, 'Maine': 2, 'Nebraska': 2
 }
 
-# Map electoral votes to the latest data
-latest_polls['electoral_votes'] = latest_polls['state'].map(electoral_votes)
+# Map electoral votes to the averaged data
+pivot_avg_data['electoral_votes'] = pivot_avg_data.index.map(electoral_votes)
 
 # Summarize electoral votes for each candidate
-electoral_summary = latest_polls.groupby('winner')['electoral_votes'].sum()
+electoral_summary = pivot_avg_data.groupby('winner')['electoral_votes'].sum()
 
 # Visualization
-color_map = latest_polls['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
-states = latest_polls['state'].tolist()
+color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
+states = pivot_avg_data.index.tolist()
 plt.figure(figsize=(12, 6))
-plt.bar(states, latest_polls['electoral_votes'], color=color_map)
-plt.xticks(rotation=90)  # Rotate state labels for better visibility
+plt.bar(states, pivot_avg_data['electoral_votes'], color=color_map)
+plt.xticks(rotation=90)
 plt.title('2024 Electoral College Prediction')
 plt.xlabel('States')
 plt.ylabel('Electoral Votes')
 plt.show()
 
 print(electoral_summary)
+
+# Other parts of your visualization and code logic remain the same.
 
 # State abbreviation mapping
 state_abbreviations = {
@@ -101,15 +107,19 @@ state_abbreviations = {
     'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
 }
 
-# Check one state or district's data
-print(latest_polls[latest_polls['state'] == 'Wisconsin'])
-
-# Cap the 'differential' at -30 and 30
-latest_polls['capped_diff'] = latest_polls['differential'].clip(-30, 30)
+# Cap the 'differential' at -30 and 30 in the pivot_avg_data
+pivot_avg_data['capped_diff'] = pivot_avg_data['differential'].clip(-30, 30)
 
 # Normalize the capped differential from 0 to 1 for color mapping
 # The minimum is -30 and maximum is 30
-latest_polls['normalized_capped_diff'] = (latest_polls['capped_diff'] + 30) / 60  # This shifts and scales the values
+pivot_avg_data['normalized_capped_diff'] = (pivot_avg_data['capped_diff'] + 30) / 60  # This shifts and scales the values
+
+# Map full state names to abbreviations
+pivot_avg_data['state_code'] = pivot_avg_data.index.map(state_abbreviations)
+
+# Prepare the hover text with enhanced details, ensuring that 'hover_text' is a defined function in your utils
+# Assuming your DataFrame is pivot_avg_data and 'state' is the index
+pivot_avg_data['hover_text'] = pivot_avg_data.apply(lambda x: format_hover_text(x.name, x['Donald Trump'], x['Joe Biden'], x['differential'], x['electoral_votes']), axis=1)
 
 # Create a custom color scale that reflects the differential magnitude
 color_scale = [
@@ -118,15 +128,9 @@ color_scale = [
     [1.0, "red"]     # Favors Trump strongly
 ]
 
-# Map full state names to abbreviations
-latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
-
-# Prepare the hover text with enhanced details
-latest_polls['hover_text'] = latest_polls.apply(format_hover_text, axis=1)
-
 # Update Plotly visualization with capped differential colors and enhanced hover information
 fig = px.choropleth(
-    latest_polls,
+    pivot_avg_data,
     locations='state_code',  # Use state abbreviations
     locationmode="USA-states",
     color='normalized_capped_diff',  # Use normalized capped differential for coloring

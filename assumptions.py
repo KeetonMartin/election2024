@@ -12,14 +12,19 @@ def apply_polling_assumptions(polls_df):
 
     # Update the dataframe with assumptions
     for region, values in assumptions.items():
-        if region not in polls_df['state'].values:
-            new_data = {
-                'state': region,
-                'end_date': pd.to_datetime('2024-11-04'),
-                'Donald Trump': values['Donald Trump'],
-                'Joe Biden': values['Joe Biden'],
-                'differential': values['Donald Trump'] - values['Joe Biden'],
-                'winner': 'Donald Trump' if values['Donald Trump'] > values['Joe Biden'] else 'Joe Biden'
-            }
-            polls_df = pd.concat([polls_df, pd.DataFrame([new_data])], ignore_index=True)
+        if region in polls_df.index:
+            polls_df.at[region, 'Donald Trump'] = values['Donald Trump']
+            polls_df.at[region, 'Joe Biden'] = values['Joe Biden']
+            polls_df.at[region, 'differential'] = values['Donald Trump'] - values['Joe Biden']
+            polls_df.at[region, 'winner'] = 'Donald Trump' if values['Donald Trump'] > values['Joe Biden'] else 'Joe Biden'
+        else:
+            # If the region is not in the DataFrame, add it
+            new_row = pd.DataFrame({
+                'Donald Trump': [values['Donald Trump']],
+                'Joe Biden': [values['Joe Biden']],
+                'differential': [values['Donald Trump'] - values['Joe Biden']],
+                'winner': ['Donald Trump' if values['Donald Trump'] > values['Joe Biden'] else 'Joe Biden']
+            }, index=[region])
+            polls_df = pd.concat([polls_df, new_row])
+
     return polls_df

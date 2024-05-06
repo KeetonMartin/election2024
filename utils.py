@@ -1,8 +1,8 @@
 # Prepare the hover text with enhanced details
-def format_hover_text(row):
-    if row['differential'] > 0:
-        return f"{row['state']}<br>Trump leads by {abs(row['differential']):.2f}<br>Electoral Votes: {row['electoral_votes']}"
-    elif row['differential'] < 0:
-        return f"{row['state']}<br>Biden leads by {abs(row['differential']):.2f}<br>Electoral Votes: {row['electoral_votes']}"
+def format_hover_text(state, trump, biden, differential, electoral_votes):
+    if differential > 0:
+        return f"{state}<br>Trump +{abs(differential):.1f}"
+    elif differential < 0:
+        return f"{state}<br>Biden +{abs(differential):.1f}"
     else:
-        return f"{row['state']}<br>Polling indicates Tie<br>Electoral Votes: {row['electoral_votes']}"
+        return f"{state}<br>Polling indicates no lead"
