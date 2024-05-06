@@ -3,21 +3,40 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 # Load the dataset
-file_path = './data/president_polls.csv'
+file_path = './data/president_polls3.csv'
 poll_data = pd.read_csv(file_path)
 
+# Convert 'end_date' to datetime with the correct format
+poll_data['end_date'] = pd.to_datetime(poll_data['end_date'], format='%m/%d/%y', errors='coerce')
+
+# Determine today's date for reference
+today = pd.Timestamp('today')
+
+# Define a function to calculate weights based on the age of the poll
+# Using exponential decay, where weight decreases by half every 180 days (half-life)
+def calculate_weight(end_date):
+    days_passed = (today - end_date).days
+    return 0.5 ** (days_passed / 180)
+
+# Apply the weight function to each poll
+poll_data['weight'] = poll_data['end_date'].apply(calculate_weight)
+
 # Filter and focus on relevant columns and candidates
-relevant_columns = ['state', 'end_date', 'candidate_name', 'pct']
+relevant_columns = ['state', 'end_date', 'candidate_name', 'pct', 'weight']
 candidates = ['Donald Trump', 'Joe Biden']
 filtered_data = poll_data[relevant_columns]
 filtered_data = filtered_data[filtered_data['candidate_name'].isin(candidates)]
 
-# Convert 'end_date' to datetime with the correct format
-filtered_data['end_date'] = pd.to_datetime(filtered_data['end_date'], format='%m/%d/%y', errors='coerce')
+# Calculate weighted percentages
+filtered_data['weighted_pct'] = filtered_data['pct'] * filtered_data['weight']
+
+# Pivot data to compare Trump and Biden in each row, summing weighted percentages
+pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='weighted_pct', aggfunc='sum')
 
 # Pivot data to compare Trump and Biden in each row
 pivot_data = filtered_data.pivot_table(index=['state', 'end_date'], columns='candidate_name', values='pct', aggfunc='max')
 pivot_data = pivot_data.fillna(0)  # Fill missing values with 0
+# Calculate differential and determine the winner with weighted percentages
 pivot_data['differential'] = pivot_data.get('Donald Trump', 0) - pivot_data.get('Joe Biden', 0)
 pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
 
@@ -25,11 +44,11 @@ pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump'
 latest_polls = pivot_data.groupby('state').last().reset_index()
 
 # Check if Hawaii is in the latest polls, if not, assume it goes for Joe Biden
-if 'Hawaii' not in latest_polls['state'].values:
-    hawaii_data = {'state': 'Hawaii', 'end_date': pd.to_datetime('2024-11-04'), 'Donald Trump': 0, 'Joe Biden': 100,
-                   'differential': -100, 'winner': 'Joe Biden'}
-    hawaii_df = pd.DataFrame([hawaii_data])
-    latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
+# if 'Hawaii' not in latest_polls['state'].values:
+#     hawaii_data = {'state': 'Hawaii', 'end_date': pd.to_datetime('2024-11-04'), 'Donald Trump': 0, 'Joe Biden': 100,
+#                    'differential': -100, 'winner': 'Joe Biden'}
+#     hawaii_df = pd.DataFrame([hawaii_data])
+#     latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
 
 # Electoral votes mapping
 electoral_votes = {
