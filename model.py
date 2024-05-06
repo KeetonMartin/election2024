@@ -5,6 +5,7 @@ import plotly.offline as pyo
 
 from assumptions import apply_polling_assumptions
 from utils import format_hover_text
+import datetime
 
 # Load the dataset
 file_path = './data/president_polls3.csv'
@@ -142,11 +143,14 @@ fig = px.choropleth(
 )
 
 # Add an annotation for electoral summary
+
 electoral_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in electoral_summary.items()])
+today = datetime.date.today().strftime("%B %d, %Y")
+updated_text = f"Last Updated: {today}"
 fig.add_annotation(
     xref="paper", yref="paper",
     x=0.5, y=0.1,  # Adjust positioning based on your layout preferences
-    text=f"Electoral Vote Summary:<br>{electoral_summary_text}",
+    text=f"Electoral Vote Summary:<br>{electoral_summary_text}<br>{updated_text}",
     showarrow=False,
     align="center",
     bgcolor="rgba(255, 255, 255, 0.8)",  # Semi-transparent white background
