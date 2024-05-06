@@ -3,11 +3,11 @@ import pandas as pd
 def apply_polling_assumptions(polls_df):
     # Define specific states or districts with known political leanings
     assumptions = {
-        'District of Columbia': {'Donald Trump': 0, 'Joe Biden': 100},
-        'Hawaii': {'Donald Trump': 0, 'Joe Biden': 100},
-        'Nebraska CD-2': {'Donald Trump': 0, 'Joe Biden': 100},
-        'Nebraska CD-1': {'Donald Trump': 100, 'Joe Biden': 0},
-        'Nebraska CD-3': {'Donald Trump': 100, 'Joe Biden': 0}
+        'District of Columbia': {'Donald Trump': 6.7, 'Joe Biden': 90.0},
+        'Hawaii': {'Donald Trump': 30.7, 'Joe Biden': 63.4},
+        'Nebraska CD-2': {'Donald Trump': 45.6, 'Joe Biden': 52.4},
+        'Nebraska CD-1': {'Donald Trump': 56.4, 'Joe Biden': 41.3},
+        'Nebraska CD-3': {'Donald Trump': 75.6, 'Joe Biden': 22.4}
     }
 
     # Update the dataframe with assumptions
