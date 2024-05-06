@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
+import plotly.offline as pyo
 
 from assumptions import apply_polling_assumptions
 from utils import format_hover_text
@@ -140,8 +141,21 @@ fig = px.choropleth(
     title='2024 Electoral College Prediction'
 )
 
+# Add an annotation for electoral summary
+electoral_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in electoral_summary.items()])
+fig.add_annotation(
+    xref="paper", yref="paper",
+    x=0.5, y=0.1,  # Adjust positioning based on your layout preferences
+    text=f"Electoral Vote Summary:<br>{electoral_summary_text}",
+    showarrow=False,
+    align="center",
+    bgcolor="rgba(255, 255, 255, 0.8)",  # Semi-transparent white background
+    font=dict(size=16, color="black")
+)
+
 # Set dark theme and adjust color bar title
 fig.update_layout(template='plotly_dark')
-fig.update_layout(coloraxis_colorbar=dict(title="Polling Differential"))
+# fig.update_layout(coloraxis_colorbar=None)
+pyo.plot(fig, filename='index.html', auto_open=False)
 
 fig.show()
