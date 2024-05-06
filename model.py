@@ -50,21 +50,37 @@ latest_polls = pivot_data.groupby('state').last().reset_index()
 #     hawaii_df = pd.DataFrame([hawaii_data])
 #     latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
 
-# Electoral votes mapping
+# Assumption for Nebraska's Congressional Districts
+ne_districts = ['Nebraska CD-1', 'Nebraska CD-2', 'Nebraska CD-3']
+
+for district in ne_districts:
+    if district not in latest_polls['state'].values:
+        if district == 'Nebraska CD-2':  # Assuming CD-2 leans Democratic
+            ne_data = {'state': district, 'end_date': pd.to_datetime('2024-11-04'),
+                       'Donald Trump': 0, 'Joe Biden': 100,
+                       'differential': -100, 'winner': 'Joe Biden'}
+        else:  # Assuming other districts lean Republican
+            ne_data = {'state': district, 'end_date': pd.to_datetime('2024-11-04'),
+                       'Donald Trump': 100, 'Joe Biden': 0,
+                       'differential': 100, 'winner': 'Donald Trump'}
+        ne_df = pd.DataFrame([ne_data])
+        latest_polls = pd.concat([latest_polls, ne_df], ignore_index=True)
+
+# Electoral votes mapping, adjusted for district-based voting in Nebraska and Maine
 electoral_votes = {
     'Alabama': 9, 'Alaska': 3, 'Arizona': 11, 'Arkansas': 6,
     'California': 54, 'Colorado': 10, 'Connecticut': 7, 'Delaware': 3,
     'District of Columbia': 3, 'Florida': 30, 'Georgia': 16, 'Hawaii': 4,
     'Idaho': 4, 'Illinois': 19, 'Indiana': 11, 'Iowa': 6,
-    'Kansas': 6, 'Kentucky': 8, 'Louisiana': 8, 'Maine': 4,
+    'Kansas': 6, 'Kentucky': 8, 'Louisiana': 8, 'Maine CD-1': 1, 'Maine CD-2': 1,
     'Maryland': 10, 'Massachusetts': 11, 'Michigan': 15, 'Minnesota': 10,
-    'Mississippi': 6, 'Missouri': 10, 'Montana': 4, 'Nebraska': 5,
+    'Mississippi': 6, 'Missouri': 10, 'Montana': 4, 'Nebraska CD-1': 1, 'Nebraska CD-2': 1, 'Nebraska CD-3': 1,
     'Nevada': 6, 'New Hampshire': 4, 'New Jersey': 14, 'New Mexico': 5,
     'New York': 28, 'North Carolina': 16, 'North Dakota': 3, 'Ohio': 17,
     'Oklahoma': 7, 'Oregon': 8, 'Pennsylvania': 19, 'Rhode Island': 4,
     'South Carolina': 9, 'South Dakota': 3, 'Tennessee': 11, 'Texas': 40,
     'Utah': 6, 'Vermont': 3, 'Virginia': 13, 'Washington': 12,
-    'West Virginia': 4, 'Wisconsin': 10, 'Wyoming': 3
+    'West Virginia': 4, 'Wisconsin': 10, 'Wyoming': 3, 'Maine': 2, 'Nebraska': 2
 }
 
 # Map electoral votes to the latest data
@@ -103,8 +119,8 @@ state_abbreviations = {
     'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
 }
 
-# Check Hawaii's data
-print(latest_polls[latest_polls['state'] == 'Hawaii'])
+# Check Nebraska's data
+print(latest_polls[latest_polls['state'] == 'Maine CD-1'])
 
 # Map full state names to abbreviations
 latest_polls['state_code'] = latest_polls['state'].map(state_abbreviations)
@@ -118,4 +134,8 @@ fig = px.choropleth(latest_polls,
                     color_discrete_map={'Donald Trump': 'red', 'Joe Biden': 'blue'},
                     scope="usa",
                     title='2024 Electoral College Prediction')
+
+# Set dark theme
+fig.update_layout(template='plotly_dark')
+
 fig.show()
