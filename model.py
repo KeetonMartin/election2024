@@ -2,6 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 
+from assumptions import apply_polling_assumptions
+
 # Load the dataset
 file_path = './data/president_polls3.csv'
 poll_data = pd.read_csv(file_path)
@@ -43,41 +45,7 @@ pivot_data['winner'] = pivot_data['differential'].apply(lambda x: 'Donald Trump'
 # Get the latest poll for each state
 latest_polls = pivot_data.groupby('state').last().reset_index()
 
-# Check if Hawaii is in the latest polls, if not, assume it goes for Joe Biden
-# if 'Hawaii' not in latest_polls['state'].values:
-#     hawaii_data = {'state': 'Hawaii', 'end_date': pd.to_datetime('2024-11-04'), 'Donald Trump': 0, 'Joe Biden': 100,
-#                    'differential': -100, 'winner': 'Joe Biden'}
-#     hawaii_df = pd.DataFrame([hawaii_data])
-#     latest_polls = pd.concat([latest_polls, hawaii_df], ignore_index=True)
-
-# Assumption for the District of Columbia
-if 'District of Columbia' not in latest_polls['state'].values:
-    dc_data = {
-        'state': 'District of Columbia',
-        'end_date': pd.to_datetime('2024-11-04'),  # use your latest relevant date
-        'Donald Trump': 0,
-        'Joe Biden': 100,
-        'differential': -100,
-        'winner': 'Joe Biden'
-    }
-    dc_df = pd.DataFrame([dc_data])
-    latest_polls = pd.concat([latest_polls, dc_df], ignore_index=True)
-
-# Assumption for Nebraska's Congressional Districts
-ne_districts = ['Nebraska CD-1', 'Nebraska CD-2', 'Nebraska CD-3']
-
-for district in ne_districts:
-    if district not in latest_polls['state'].values:
-        if district == 'Nebraska CD-2':  # Assuming CD-2 leans Democratic
-            ne_data = {'state': district, 'end_date': pd.to_datetime('2024-11-04'),
-                       'Donald Trump': 0, 'Joe Biden': 100,
-                       'differential': -100, 'winner': 'Joe Biden'}
-        else:  # Assuming other districts lean Republican
-            ne_data = {'state': district, 'end_date': pd.to_datetime('2024-11-04'),
-                       'Donald Trump': 100, 'Joe Biden': 0,
-                       'differential': 100, 'winner': 'Donald Trump'}
-        ne_df = pd.DataFrame([ne_data])
-        latest_polls = pd.concat([latest_polls, ne_df], ignore_index=True)
+latest_polls = apply_polling_assumptions(latest_polls)
 
 # Electoral votes mapping, adjusted for district-based voting in Nebraska and Maine
 electoral_votes = {
