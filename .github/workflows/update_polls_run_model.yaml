@@ -5,6 +5,9 @@ on:
     - cron: '0 0 * * *' # This runs the workflow every day at midnight
   workflow_dispatch: # This allows you to manually trigger the workflow
 
+permissions:
+  contents: write
+
 jobs:
   update-and-run:
     runs-on: ubuntu-latest
