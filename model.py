@@ -8,7 +8,7 @@ from utils import format_hover_text
 import datetime
 
 # Load the dataset
-file_path = './data/president_polls4.csv'
+file_path = './data/president_polls.csv'
 poll_data = pd.read_csv(file_path)
 
 # Convert 'end_date' to datetime with the correct format

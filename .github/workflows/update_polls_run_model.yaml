@@ -1,0 +1,40 @@
+name: Update President Polls
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # This runs the workflow every day at midnight
+  workflow_dispatch: # This allows you to manually trigger the workflow
+
+jobs:
+  update-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12.2'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Download president_polls.csv
+      run: curl -o data/president_polls.csv https://projects.fivethirtyeight.com/polls/data/president_polls.csv
+
+    - name: Run model.py
+      run: python model.py
+
+    - name: Commit changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add .
+        git commit -m "Update president_polls.csv and run model.py"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
