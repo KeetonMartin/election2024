@@ -18,12 +18,15 @@ poll_data['end_date'] = pd.to_datetime(poll_data['end_date'], format='%m/%d/%y',
 today = pd.Timestamp('today')
 
 # Define a function to calculate weights based on the age of the poll
-def calculate_weight(end_date):
+# Define a function to calculate weights based on the age of the poll and numeric_grade
+def calculate_weight(end_date, numeric_grade):
     days_passed = (today - end_date).days
-    return 0.5 ** (days_passed / 180)
+    age_weight = 0.5 ** (days_passed / 180)
+    grade_weight = numeric_grade / 3.0  # Normalize numeric_grade to be between 0 and 1
+    return age_weight * grade_weight
 
 # Apply the weight function to each poll
-poll_data['weight'] = poll_data['end_date'].apply(calculate_weight)
+poll_data['weight'] = poll_data.apply(lambda row: calculate_weight(row['end_date'], row['numeric_grade']), axis=1)
 
 # Filter and focus on relevant columns and candidates
 relevant_columns = ['state', 'end_date', 'candidate_name', 'pct', 'weight']
@@ -158,7 +161,10 @@ fig.add_annotation(
 )
 
 # Set dark theme and adjust color bar title
-fig.update_layout(template='plotly_dark')
+fig.update_layout(
+    template='plotly_dark',
+    coloraxis_showscale=False  # Remove the color bar
+)
 # fig.update_layout(coloraxis_colorbar=None)
 pyo.plot(fig, filename='index.html', auto_open=False)
 
