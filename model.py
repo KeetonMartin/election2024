@@ -53,7 +53,7 @@ grouped_data['weighted_avg_pct'] = grouped_data['total_weighted_pct'] / grouped_
 grouped_data = pd.merge(grouped_data, highest_weighted_polls, on=['state', 'candidate_name'], how='left')
 
 # Pivot data to compare Trump and Biden in each row
-pivot_avg_data = grouped_data.pivot_table(index='state', columns='candidate_name', values=['weighted_avg_pct', 'pollster', 'end_date'], aggfunc='first')
+pivot_avg_data = grouped_data.pivot(index='state', columns='candidate_name', values=['weighted_avg_pct', 'pollster', 'end_date'])
 pivot_avg_data.fillna(0, inplace=True)
 
 # Calculate differential and determine the winner with weighted averages
@@ -62,6 +62,10 @@ pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donal
 
 # Apply polling assumptions
 pivot_avg_data = apply_polling_assumptions(pivot_avg_data)
+
+# Ensure all states have a valid winner and no NaN values
+pivot_avg_data['winner'].fillna('No Data', inplace=True)
+pivot_avg_data['winner'] = pivot_avg_data['winner'].replace({'No Data': 'Undecided'})
 
 # Electoral votes mapping, adjusted for district-based voting in Nebraska and Maine
 electoral_votes = {
@@ -87,7 +91,7 @@ pivot_avg_data['electoral_votes'] = pivot_avg_data.index.map(electoral_votes)
 electoral_summary = pivot_avg_data.groupby('winner')['electoral_votes'].sum()
 
 # Visualization
-color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
+color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue', 'Undecided': 'grey'}).tolist()
 states = pivot_avg_data.index.tolist()
 plt.figure(figsize=(12, 6))
 plt.bar(states, pivot_avg_data['electoral_votes'], color=color_map)
