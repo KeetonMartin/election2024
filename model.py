@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.offline as pyo
-
 from assumptions import apply_polling_assumptions
 from utils import format_hover_text
 import datetime
@@ -17,7 +16,6 @@ poll_data['end_date'] = pd.to_datetime(poll_data['end_date'], format='%m/%d/%y',
 # Determine today's date for reference
 today = pd.Timestamp('today')
 
-# Define a function to calculate weights based on the age of the poll
 # Define a function to calculate weights based on the age of the poll and numeric_grade
 def calculate_weight(end_date, numeric_grade):
     days_passed = (today - end_date).days
@@ -29,13 +27,18 @@ def calculate_weight(end_date, numeric_grade):
 poll_data['weight'] = poll_data.apply(lambda row: calculate_weight(row['end_date'], row['numeric_grade']), axis=1)
 
 # Filter and focus on relevant columns and candidates
-relevant_columns = ['state', 'end_date', 'candidate_name', 'pct', 'weight']
+relevant_columns = ['state', 'end_date', 'candidate_name', 'pollster', 'pct', 'weight']
 candidates = ['Donald Trump', 'Joe Biden']
 filtered_data = poll_data[relevant_columns]
 filtered_data = filtered_data[filtered_data['candidate_name'].isin(candidates)]
 
 # Calculate weighted percentages
 filtered_data['weighted_pct'] = filtered_data['pct'] * filtered_data['weight']
+
+# Find the highest weighted poll for each candidate in each state
+filtered_data['rank'] = filtered_data.groupby(['state', 'candidate_name'])['weight'].rank(method='first', ascending=False)
+highest_weighted_polls = filtered_data[filtered_data['rank'] == 1].copy()
+highest_weighted_polls = highest_weighted_polls[['state', 'candidate_name', 'pollster', 'end_date', 'weight']]
 
 # Group by state and candidate, then calculate the sum of weighted percentages and sum of weights
 grouped_data = filtered_data.groupby(['state', 'candidate_name']).agg(
@@ -46,12 +49,15 @@ grouped_data = filtered_data.groupby(['state', 'candidate_name']).agg(
 # Calculate the weighted average
 grouped_data['weighted_avg_pct'] = grouped_data['total_weighted_pct'] / grouped_data['total_weight']
 
+# Merge the highest weighted poll information with grouped_data
+grouped_data = pd.merge(grouped_data, highest_weighted_polls, on=['state', 'candidate_name'], how='left')
+
 # Pivot data to compare Trump and Biden in each row
-pivot_avg_data = grouped_data.pivot_table(index='state', columns='candidate_name', values='weighted_avg_pct', aggfunc='max')
+pivot_avg_data = grouped_data.pivot_table(index='state', columns='candidate_name', values=['weighted_avg_pct', 'pollster', 'end_date'], aggfunc='first')
 pivot_avg_data.fillna(0, inplace=True)
 
 # Calculate differential and determine the winner with weighted averages
-pivot_avg_data['differential'] = pivot_avg_data.get('Donald Trump', 0) - pivot_avg_data.get('Joe Biden', 0)
+pivot_avg_data['differential'] = pivot_avg_data[('weighted_avg_pct', 'Donald Trump')] - pivot_avg_data[('weighted_avg_pct', 'Joe Biden')]
 pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
 
 # Apply polling assumptions
@@ -116,15 +122,23 @@ state_abbreviations = {
 pivot_avg_data['capped_diff'] = pivot_avg_data['differential'].clip(-30, 30)
 
 # Normalize the capped differential from 0 to 1 for color mapping
-# The minimum is -30 and maximum is 30
 pivot_avg_data['normalized_capped_diff'] = (pivot_avg_data['capped_diff'] + 30) / 60  # This shifts and scales the values
 
 # Map full state names to abbreviations
 pivot_avg_data['state_code'] = pivot_avg_data.index.map(state_abbreviations)
 
-# Prepare the hover text with enhanced details, ensuring that 'hover_text' is a defined function in your utils
-# Assuming your DataFrame is pivot_avg_data and 'state' is the index
-pivot_avg_data['hover_text'] = pivot_avg_data.apply(lambda x: format_hover_text(x.name, x['Donald Trump'], x['Joe Biden'], x['differential'], x['electoral_votes']), axis=1)
+# Prepare the hover text with enhanced details
+pivot_avg_data['hover_text'] = pivot_avg_data.apply(lambda x: format_hover_text(
+    x.name, 
+    x[('weighted_avg_pct', 'Donald Trump')], 
+    x[('weighted_avg_pct', 'Joe Biden')], 
+    x['differential'], 
+    x['electoral_votes'], 
+    x[('pollster', 'Donald Trump')],
+    x[('pollster', 'Joe Biden')],
+    x[('end_date', 'Donald Trump')],
+    x[('end_date', 'Joe Biden')]
+), axis=1)
 
 # Create a custom color scale that reflects the differential magnitude
 color_scale = [
@@ -146,7 +160,6 @@ fig = px.choropleth(
 )
 
 # Add an annotation for electoral summary
-
 electoral_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in electoral_summary.items()])
 today = datetime.date.today().strftime("%B %d, %Y")
 updated_text = f"Last Updated: {today}"
@@ -165,7 +178,6 @@ fig.update_layout(
     template='plotly_dark',
     coloraxis_showscale=False  # Remove the color bar
 )
-# fig.update_layout(coloraxis_colorbar=None)
 pyo.plot(fig, filename='index.html', auto_open=False)
 
 fig.show()
