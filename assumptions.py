@@ -1,7 +1,7 @@
+# assumptions.py
 import pandas as pd
 
-def apply_polling_assumptions(polls_df):
-    # Define specific states or districts with known political leanings
+def apply_polling_assumptions(polls_df: pd.DataFrame) -> pd.DataFrame:
     assumptions = {
         'District of Columbia': {'Donald Trump': 6.7, 'Joe Biden': 90.0},
         'Hawaii': {'Donald Trump': 30.7, 'Joe Biden': 63.4},
@@ -10,7 +10,6 @@ def apply_polling_assumptions(polls_df):
         'Nebraska CD-3': {'Donald Trump': 75.6, 'Joe Biden': 22.4}
     }
 
-    # Update the dataframe with assumptions
     for region, values in assumptions.items():
         if region in polls_df.index:
             polls_df.at[region, 'Donald Trump'] = values['Donald Trump']
@@ -18,7 +17,6 @@ def apply_polling_assumptions(polls_df):
             polls_df.at[region, 'differential'] = values['Donald Trump'] - values['Joe Biden']
             polls_df.at[region, 'winner'] = 'Donald Trump' if values['Donald Trump'] > values['Joe Biden'] else 'Joe Biden'
         else:
-            # If the region is not in the DataFrame, add it
             new_row = pd.DataFrame({
                 'Donald Trump': [values['Donald Trump']],
                 'Joe Biden': [values['Joe Biden']],
