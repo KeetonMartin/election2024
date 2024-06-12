@@ -8,9 +8,18 @@ def load_poll_data(file_path: str) -> pd.DataFrame:
     return poll_data
 
 def calculate_weight(end_date: pd.Timestamp, numeric_grade: float, today: pd.Timestamp) -> float:
+    # Handle missing or invalid end_date
+    if pd.isna(end_date):
+        end_date = pd.Timestamp('2023-01-01')  # A very old date to give the least weight
+    # Handle missing or invalid numeric_grade
+    if pd.isna(numeric_grade) or numeric_grade <= 0:
+        numeric_grade = 1.0  # Assign the lowest possible grade
+    
     days_passed = (today - end_date).days
-    age_weight = 0.5 ** (days_passed / 180)
-    grade_weight = numeric_grade / 3.0
+    # Intermediate drop-off for age weight
+    age_weight = 0.5 ** (days_passed / 30)
+    # Intermediate drop-off for grade weight
+    grade_weight = (numeric_grade / 3.0) ** 2
     return age_weight * grade_weight
 
 def process_poll_data(poll_data: pd.DataFrame, candidates: List[str], today: pd.Timestamp) -> pd.DataFrame:
