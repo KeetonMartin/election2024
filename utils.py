@@ -1,4 +1,3 @@
-# utils.py
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.offline as pyo
@@ -13,7 +12,7 @@ def format_hover_text(state: str, trump: float, biden: float, differential: floa
     else:
         return f"{state}<br>Polling indicates no lead"
 
-def plot_electoral_college(pivot_avg_data: pd.DataFrame, electoral_summary: pd.Series):
+def plot_electoral_college(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series, win_probabilities: dict):
     color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
     states = pivot_avg_data.index.tolist()
     plt.figure(figsize=(12, 6))
@@ -23,9 +22,11 @@ def plot_electoral_college(pivot_avg_data: pd.DataFrame, electoral_summary: pd.S
     plt.xlabel('States')
     plt.ylabel('Electoral Votes')
     plt.show()
-    print(electoral_summary)
+    print(simulation_summary)
+    print(f"Donald Trump: {win_probabilities['Donald Trump']:.1%} chance of victory")
+    print(f"Joe Biden: {win_probabilities['Joe Biden']:.1%} chance of victory")
 
-def plot_choropleth(pivot_avg_data: pd.DataFrame, electoral_summary: pd.Series):
+def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series, win_probabilities: dict):
     color_scale = [
         [0.0, "blue"],
         [0.5, "white"],
@@ -42,13 +43,18 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, electoral_summary: pd.Series):
         scope="usa",
         title='2024 Electoral College Prediction'
     )
-    electoral_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in electoral_summary.items()])
+    simulation_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in simulation_summary.items()])
     today = datetime.date.today().strftime("%B %d, %Y")
-    updated_text = f"Last Updated: {today}"
+    updated_text = (
+        f"Electoral Vote Summary from Simulation:<br>{simulation_summary_text}<br>"
+        f"Donald Trump: {win_probabilities['Donald Trump']:.1%} chance of victory<br>"
+        f"Joe Biden: {win_probabilities['Joe Biden']:.1%} chance of victory<br>"
+        f"Last Updated: {today}"
+    )
     fig.add_annotation(
         xref="paper", yref="paper",
         x=0.5, y=0.1,
-        text=f"Electoral Vote Summary:<br>{electoral_summary_text}<br>{updated_text}",
+        text=updated_text,
         showarrow=False,
         align="center",
         bgcolor="rgba(255, 255, 255, 0.8)",
