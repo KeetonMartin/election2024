@@ -1,10 +1,28 @@
-# main.py
+import numpy as np
 import pandas as pd
 from data_processing import load_poll_data, process_poll_data, calculate_differential_and_winner, add_electoral_votes, summarize_electoral_votes
 from assumptions import apply_polling_assumptions
 from electoral_votes import electoral_votes
 from state_abbreviations import state_abbreviations
 from utils import plot_electoral_college, plot_choropleth
+
+def simulate_election(pivot_avg_data, electoral_votes, num_simulations=1000, stddev=5.0):
+    results = {'Donald Trump': 0, 'Joe Biden': 0}
+    
+    for _ in range(num_simulations):
+        simulated_data = pivot_avg_data.copy()
+        simulated_data['simulated_diff'] = np.random.normal(simulated_data['differential'], stddev)
+        simulated_data['simulated_winner'] = simulated_data['simulated_diff'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
+        
+        state_winners = simulated_data[['simulated_winner']].merge(pd.DataFrame(electoral_votes.items(), columns=['state', 'electoral_votes']), left_index=True, right_on='state')
+        electoral_counts = state_winners.groupby('simulated_winner')['electoral_votes'].sum()
+        
+        if 'Donald Trump' in electoral_counts and electoral_counts['Donald Trump'] >= 270:
+            results['Donald Trump'] += 1
+        if 'Joe Biden' in electoral_counts and electoral_counts['Joe Biden'] >= 270:
+            results['Joe Biden'] += 1
+    
+    return results
 
 file_path = './data/president_polls.csv'
 today = pd.Timestamp('today')
@@ -38,14 +56,8 @@ plot_electoral_college(pivot_avg_data, electoral_summary)
 # Plot the choropleth map with capped differential colors and enhanced hover information
 plot_choropleth(pivot_avg_data, electoral_summary)
 
+# Simulate the election
+simulation_results = simulate_election(pivot_avg_data, electoral_votes)
 
-# inspect a specific state for observbility:
-# Extract and display Vermont's polling average and the polls used
-vermont_polling_avg = pivot_avg_data.loc['Vermont']
-vermont_polls_used = poll_data[poll_data['state'] == 'Vermont']
-
-print("Vermont Polling Average:")
-print(vermont_polling_avg)
-
-print("\nPolls Used for Vermont's Calculation:")
-print(vermont_polls_used)
+print("Simulation Results:")
+print(simulation_results)
