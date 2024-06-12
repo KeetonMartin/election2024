@@ -53,11 +53,11 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series,
     )
     fig.add_annotation(
         xref="paper", yref="paper",
-        x=0.5, y=0.1,
+        x=0.5, y=0.01,
         text=updated_text,
         showarrow=False,
         align="center",
-        bgcolor="rgba(255, 255, 255, 0.8)",
+        bgcolor="rgba(255, 255, 255, 0.6)",
         font=dict(size=16, color="black")
     )
     fig.update_layout(
