@@ -5,6 +5,7 @@ def apply_polling_assumptions(polls_df: pd.DataFrame) -> pd.DataFrame:
     assumptions = {
         'District of Columbia': {'Donald Trump': 6.7, 'Joe Biden': 90.0},
         'Hawaii': {'Donald Trump': 30.7, 'Joe Biden': 63.4},
+        'Delaware': {'Donald Trump': 39.77, 'Joe Biden': 58.74},
         'Nebraska CD-2': {'Donald Trump': 45.6, 'Joe Biden': 52.4},
         'Nebraska CD-1': {'Donald Trump': 56.4, 'Joe Biden': 41.3},
         'Nebraska CD-3': {'Donald Trump': 75.6, 'Joe Biden': 22.4}

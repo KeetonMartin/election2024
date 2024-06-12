@@ -24,11 +24,21 @@ pivot_avg_data = apply_polling_assumptions(pivot_avg_data)
 # Add electoral votes to the data
 pivot_avg_data = add_electoral_votes(pivot_avg_data, electoral_votes)
 
+# Debug: Print missing states
+print("States in electoral votes but missing in pivot_avg_data:")
+missing_states = set(electoral_votes.keys()) - set(pivot_avg_data.index)
+print(missing_states)
+
 # Simulate the election
 win_probabilities, simulation_summary = simulate_election(pivot_avg_data, electoral_votes)
 
 # Summarize electoral votes for each candidate
 electoral_summary = summarize_electoral_votes(pivot_avg_data)
+
+# Ensure the total number of electoral votes is correct
+total_electoral_votes = electoral_summary.sum()
+if total_electoral_votes != 538:
+    raise ValueError(f"Total electoral votes are incorrect: {total_electoral_votes}. Should be 538.")
 
 # Map full state names to abbreviations and prepare data for visualization
 pivot_avg_data['state_code'] = pivot_avg_data.index.map(state_abbreviations)

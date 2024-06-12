@@ -43,7 +43,7 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series,
         scope="usa",
         title='2024 Electoral College Prediction'
     )
-    simulation_summary_text = "<br>".join([f"{winner}: {votes} votes" for winner, votes in simulation_summary.items()])
+    simulation_summary_text = "<br>".join([f"{winner}: {votes:.1f} votes" for winner, votes in simulation_summary.items()])
     today = datetime.date.today().strftime("%B %d, %Y")
     updated_text = (
         f"Electoral Vote Summary from Simulation:<br>{simulation_summary_text}<br>"
