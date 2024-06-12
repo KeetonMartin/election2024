@@ -6,12 +6,14 @@ from electoral_votes import electoral_votes
 from state_abbreviations import state_abbreviations
 from utils import plot_electoral_college, plot_choropleth
 
-def simulate_election(pivot_avg_data, electoral_votes, num_simulations=1000, stddev=5.0):
+def simulate_election(pivot_avg_data, electoral_votes, num_simulations=1000, stddev_national=3.0, stddev_state=2.0):
     results = {'Donald Trump': 0, 'Joe Biden': 0}
     
     for _ in range(num_simulations):
+        national_error = np.random.normal(0, stddev_national)
         simulated_data = pivot_avg_data.copy()
-        simulated_data['simulated_diff'] = np.random.normal(simulated_data['differential'], stddev)
+        simulated_data['state_error'] = np.random.normal(0, stddev_state, simulated_data.shape[0])
+        simulated_data['simulated_diff'] = simulated_data['differential'] + national_error + simulated_data['state_error']
         simulated_data['simulated_winner'] = simulated_data['simulated_diff'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
         
         state_winners = simulated_data[['simulated_winner']].merge(pd.DataFrame(electoral_votes.items(), columns=['state', 'electoral_votes']), left_index=True, right_on='state')
