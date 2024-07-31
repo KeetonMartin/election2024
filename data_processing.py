@@ -31,7 +31,7 @@ def process_poll_data(poll_data: pd.DataFrame, candidates: List[str], today: pd.
     
     # Calculate differentials per question_id
     differentials = filtered_data.pivot_table(index=['state', 'question_id'], columns='candidate_name', values='pct').dropna()
-    differentials['question_id_differential'] = differentials['Donald Trump'] - differentials['Joe Biden']
+    differentials['question_id_differential'] = differentials['Donald Trump'] - differentials['Kamala Harris']
     
     # Merge weights back into differentials
     weights = filtered_data[['state', 'question_id', 'weight']].drop_duplicates()
@@ -48,14 +48,14 @@ def process_poll_data(poll_data: pd.DataFrame, candidates: List[str], today: pd.
     # Create a pivot table similar to the original structure
     pivot_avg_data = grouped_data[['weighted_avg_diff']].rename(columns={'weighted_avg_diff': 'differential'})
     pivot_avg_data['Donald Trump'] = pivot_avg_data['differential'].apply(lambda x: max(0, x))
-    pivot_avg_data['Joe Biden'] = pivot_avg_data['differential'].apply(lambda x: max(0, -x))
-    pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
+    pivot_avg_data['Kamala Harris'] = pivot_avg_data['differential'].apply(lambda x: max(0, -x))
+    pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Kamala Harris')
     
     return pivot_avg_data
 
 def calculate_differential_and_winner(pivot_avg_data: pd.DataFrame) -> pd.DataFrame:
-    pivot_avg_data['differential'] = pivot_avg_data.get('Donald Trump', 0) - pivot_avg_data.get('Joe Biden', 0)
-    pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Joe Biden')
+    pivot_avg_data['differential'] = pivot_avg_data.get('Donald Trump', 0) - pivot_avg_data.get('Kamala Harris', 0)
+    pivot_avg_data['winner'] = pivot_avg_data['differential'].apply(lambda x: 'Donald Trump' if x > 0 else 'Kamala Harris')
     return pivot_avg_data
 
 def add_electoral_votes(pivot_avg_data: pd.DataFrame, electoral_votes: Dict[str, int]) -> pd.DataFrame:

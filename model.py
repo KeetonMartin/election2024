@@ -9,7 +9,7 @@ from utils import plot_electoral_college, plot_choropleth
 file_path = './data/president_polls.csv'
 today = pd.Timestamp('today')
 
-candidates = ['Donald Trump', 'Joe Biden']
+candidates = ['Donald Trump', 'Kamala Harris']
 
 # Load and process poll data
 poll_data = load_poll_data(file_path)

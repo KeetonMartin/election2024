@@ -4,16 +4,16 @@ import plotly.offline as pyo
 import datetime
 import pandas as pd
 
-def format_hover_text(state: str, trump: float, biden: float, differential: float, electoral_votes: int) -> str:
+def format_hover_text(state: str, trump: float, harris: float, differential: float, electoral_votes: int) -> str:
     if differential > 0:
         return f"{state}<br>Trump +{abs(differential):.1f}"
     elif differential < 0:
-        return f"{state}<br>Biden +{abs(differential):.1f}"
+        return f"{state}<br>Harris +{abs(differential):.1f}"
     else:
         return f"{state}<br>Polling indicates no lead"
 
 def plot_electoral_college(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series, win_probabilities: dict):
-    color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Joe Biden': 'blue'}).tolist()
+    color_map = pivot_avg_data['winner'].map({'Donald Trump': 'red', 'Kamala Harris': 'blue'}).tolist()
     states = pivot_avg_data.index.tolist()
     plt.figure(figsize=(12, 6))
     plt.bar(states, pivot_avg_data['electoral_votes'], color=color_map)
@@ -24,7 +24,7 @@ def plot_electoral_college(pivot_avg_data: pd.DataFrame, simulation_summary: pd.
     plt.show()
     print(simulation_summary)
     print(f"Donald Trump: {win_probabilities['Donald Trump']:.1%} chance of victory")
-    print(f"Joe Biden: {win_probabilities['Joe Biden']:.1%} chance of victory")
+    print(f"Kamala Harris: {win_probabilities['Kamala Harris']:.1%} chance of victory")
 
 def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series, win_probabilities: dict):
     color_scale = [
@@ -32,7 +32,7 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series,
         [0.5, "white"],
         [1.0, "red"]
     ]
-    pivot_avg_data['hover_text'] = pivot_avg_data.apply(lambda x: format_hover_text(x.name, x['Donald Trump'], x['Joe Biden'], x['differential'], x['electoral_votes']), axis=1)
+    pivot_avg_data['hover_text'] = pivot_avg_data.apply(lambda x: format_hover_text(x.name, x['Donald Trump'], x['Kamala Harris'], x['differential'], x['electoral_votes']), axis=1)
     fig = px.choropleth(
         pivot_avg_data,
         locations='state_code',
@@ -48,7 +48,7 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series,
     updated_text = (
         f"Electoral Vote Summary from Simulation:<br>{simulation_summary_text}<br>"
         f"Donald Trump: {win_probabilities['Donald Trump']:.1%} chance of victory<br>"
-        f"Joe Biden: {win_probabilities['Joe Biden']:.1%} chance of victory<br>"
+        f"Kamala Harris: {win_probabilities['Kamala Harris']:.1%} chance of victory<br>"
         f"Last Updated: {today}"
     )
     fig.add_annotation(
