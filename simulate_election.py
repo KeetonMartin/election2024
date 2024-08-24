@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import json
+from datetime import datetime
 
 def simulate_election(pivot_avg_data, electoral_votes, num_simulations=1000, stddev_national=4.0, stddev_state=3.0):
     results = {'Donald Trump': 0, 'Kamala Harris': 0}
@@ -24,4 +26,23 @@ def simulate_election(pivot_avg_data, electoral_votes, num_simulations=1000, std
     
     simulation_summary = pd.DataFrame(simulation_details).fillna(0).mean()
     win_probabilities = {candidate: results[candidate] / num_simulations for candidate in results}
+    
+    # Append results to JSON file
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    result_entry = {
+        "timestamp": timestamp,
+        "win_probabilities": win_probabilities,
+        "simulation_summary": simulation_summary.to_dict()
+    }
+    
+    try:
+        with open("simulation_results.json", "r+") as f:
+            data = json.load(f)
+            data.append(result_entry)
+            f.seek(0)
+            json.dump(data, f, indent=2)
+    except FileNotFoundError:
+        with open("simulation_results.json", "w") as f:
+            json.dump([result_entry], f, indent=2)
+    
     return win_probabilities, simulation_summary

@@ -1,0 +1,24 @@
+[
+  {
+    "timestamp": "2024-08-23 17:02:55",
+    "win_probabilities": {
+      "Donald Trump": 0.493,
+      "Kamala Harris": 0.503
+    },
+    "simulation_summary": {
+      "Donald Trump": 266.707,
+      "Kamala Harris": 271.293
+    }
+  },
+  {
+    "timestamp": "2024-08-23 17:03:21",
+    "win_probabilities": {
+      "Donald Trump": 0.505,
+      "Kamala Harris": 0.489
+    },
+    "simulation_summary": {
+      "Donald Trump": 268.51,
+      "Kamala Harris": 269.49
+    }
+  }
+]
