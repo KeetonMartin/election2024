@@ -1,96 +1,91 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
-import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from './components/ui/chart'
-import { LineChart, Line, XAxis, CartesianGrid, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { useEffect, useState } from "react"
+import { TrendingUp } from "lucide-react"
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, Legend } from "recharts"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card"
 
 interface SimulationResult {
-  timestamp: string;
+  timestamp: string
   win_probabilities: {
-    'Donald Trump': number;
-    'Kamala Harris': number;
-  };
+    "Donald Trump": number
+    "Kamala Harris": number
+  }
 }
 
-const chartConfig = {
-  'Donald Trump': {
-    label: "Donald Trump",
-    color: "hsl(var(--chart-1))",
-  },
-  'Kamala Harris': {
-    label: "Kamala Harris",
-    color: "hsl(var(--chart-2))",
-  },
-} satisfies ChartConfig
-
 function App() {
-  const [simulationData, setSimulationData] = useState<SimulationResult[]>([])
+  const [chartData, setChartData] = useState<SimulationResult[]>([])
 
   useEffect(() => {
     fetch('/simulation_results.json')
       .then(response => response.json())
-      .then(data => {
-        console.log('Raw data:', data); // Log raw data
-        const formattedData = data.map((item: SimulationResult) => ({
-          timestamp: new Date(item.timestamp).toLocaleDateString(),
-          'Donald Trump': item.win_probabilities['Donald Trump'] * 100,
-          'Kamala Harris': item.win_probabilities['Kamala Harris'] * 100,
-        }))
-        console.log('Formatted data:', formattedData); // Log formatted data
-        setSimulationData(formattedData)
-      })
-      .catch(error => console.error('Error loading simulation data:', error))
+      .then(data => setChartData(data))
+      .catch(error => console.error('Error fetching data:', error))
   }, [])
 
-  console.log('Render data:', simulationData); // Log data on each render
+  const formattedData = chartData.map(result => ({
+    timestamp: new Date(result.timestamp).toLocaleDateString(),
+    "Donald Trump": result.win_probabilities["Donald Trump"] * 100,
+    "Kamala Harris": result.win_probabilities["Kamala Harris"] * 100,
+  }))
 
   return (
     <div className="container mx-auto p-4">
-      <Card className="w-full">
+      <Card>
         <CardHeader>
-          <CardTitle>Election Simulation Results</CardTitle>
-          <CardDescription>Percentage chance of winning over time</CardDescription>
+          <CardTitle>2024 Election Win Probability</CardTitle>
+          <CardDescription>August 23 - August 27, 2024</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
-          <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={simulationData}>
-                <CartesianGrid vertical={false} stroke="hsl(var(--primary-foreground) / 0.1)" />
-                <XAxis
-                  dataKey="timestamp"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                  stroke="hsl(var(--primary-foreground))"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => `${value}%`}
-                  stroke="hsl(var(--primary-foreground))"
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="Donald Trump"
-                  stroke="var(--color-Donald Trump)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="Kamala Harris"
-                  stroke="var(--color-Kamala Harris)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+        <CardContent>
+          <LineChart
+            width={600}
+            height={300}
+            data={formattedData}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="timestamp" />
+            <YAxis domain={[40, 60]} tickFormatter={(value) => `${value}%`} />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="Donald Trump"
+              stroke="#FF0000"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
+              type="monotone"
+              dataKey="Kamala Harris"
+              stroke="#0000FF"
+              strokeWidth={2}
+              dot={false}
+            />
+          </LineChart>
         </CardContent>
+        <CardFooter>
+          <div className="flex w-full items-start gap-2 text-sm">
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 font-medium leading-none">
+                Win probabilities fluctuating <TrendingUp className="h-4 w-4" />
+              </div>
+              <div className="flex items-center gap-2 leading-none text-muted-foreground">
+                Showing win probabilities based on simulation results
+              </div>
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   )
