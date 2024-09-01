@@ -1,7 +1,38 @@
 import { useEffect, useState } from "react"
-import { CartesianGrid, XAxis, Bar, BarChart, ResponsiveContainer, Tooltip, Legend } from "recharts"
-import { ThemeProvider } from "./components/theme-provider"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegendContent } from "./components/ui/chart"
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Label,
+  LabelList,
+  Line,
+  LineChart,
+  PolarAngleAxis,
+  RadialBar,
+  RadialBarChart,
+  Rectangle,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "./components/ui/chart"
+import { Separator } from "@/components/ui/separator"
+import { formatDate, formatPercentage } from "./utils/formatters" // Add this import
 
 interface SimulationResult {
   timestamp: string
@@ -20,7 +51,7 @@ const chartConfig = {
     label: "Kamala Harris",
     color: "hsl(240, 100%, 50%)", // Bright blue
   },
-} satisfies ChartConfig
+}
 
 function App() {
   const [chartData, setChartData] = useState<SimulationResult[]>([])
@@ -38,36 +69,87 @@ function App() {
     "Kamala Harris": result.win_probabilities["Kamala Harris"] * 100,
   }))
 
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip bg-background p-2 border border-border rounded-md shadow-md">
+          <p className="label font-semibold">{formatDate(label)}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {entry.name}: {formatPercentage(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="min-h-screen w-full flex flex-col items-center">
-        <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 w-full">
-          <h1 className="text-2xl font-bold">Election Dashboard</h1>
-        </header>
-        <main className="flex-1 space-y-4 p-8 pt-6 w-full max-w-6xl">
-          <div className="flex justify-center">
-            <ChartContainer config={chartConfig} className="h-[70vh] w-full max-w-4xl">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={formattedData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="timestamp"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    tickFormatter={(value) => new Date(value).toLocaleDateString()}
+    <div className="chart-wrapper mx-auto flex max-w-6xl flex-col flex-wrap items-start justify-center gap-6 p-6 sm:flex-row sm:p-8">
+      <div className="grid w-full gap-6 sm:grid-cols-2 lg:max-w-[22rem] lg:grid-cols-1 xl:max-w-[25rem]">
+        <Card className="lg:max-w-md">
+          <CardHeader className="space-y-0 pb-2">
+            <CardDescription>Election Simulation</CardDescription>
+            <CardTitle className="text-4xl tabular-nums">
+              Election Results
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig}>
+              <BarChart
+                margin={{
+                  left: -4,
+                  right: -4,
+                }}
+                data={formattedData}
+              >
+                <Bar
+                  dataKey="Donald Trump"
+                  fill={chartConfig["Donald Trump"].color}
+                  radius={5}
+                  fillOpacity={0.6}
+                  activeBar={<Rectangle fillOpacity={0.8} />}
+                />
+                <Bar
+                  dataKey="Kamala Harris"
+                  fill={chartConfig["Kamala Harris"].color}
+                  radius={5}
+                  fillOpacity={0.6}
+                  activeBar={<Rectangle fillOpacity={0.8} />}
+                />
+                <XAxis
+                  dataKey="timestamp"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  tickFormatter={formatDate}
+                />
+                <ChartTooltip content={<CustomTooltip />} cursor={false} />
+                <ReferenceLine
+                  y={50}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="3 3"
+                  strokeWidth={1}
+                >
+                  <Label
+                    position="insideBottomLeft"
+                    value="50% Threshold"
+                    offset={10}
+                    fill="hsl(var(--foreground))"
                   />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Legend content={<ChartLegendContent />} />
-                  <Bar dataKey="Donald Trump" fill={chartConfig["Donald Trump"].color} radius={4} />
-                  <Bar dataKey="Kamala Harris" fill={chartConfig["Kamala Harris"].color} radius={4} />
-                </BarChart>
-              </ResponsiveContainer>
+                </ReferenceLine>
+              </BarChart>
             </ChartContainer>
-          </div>
-        </main>
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-1">
+            <CardDescription>
+              This chart shows the win probabilities for Donald Trump and Kamala Harris over time.
+            </CardDescription>
+          </CardFooter>
+        </Card>
       </div>
-    </ThemeProvider>
+    </div>
   )
 }
 
