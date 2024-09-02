@@ -71,19 +71,19 @@ function App() {
 
   return (
     <div className="chart-wrapper mx-auto flex max-w-6xl flex-col items-center justify-center gap-6 p-6 sm:p-8">
-      <div className="w-full max-w-xl mx-auto"> {/* Use max-w-xl or another width you prefer */}
-        <Card className="mx-auto"> {/* Ensure the card itself is centered */}
+      <div className="w-full max-w-[25rem]">
+        <Card className="rounded-lg">
           <CardHeader className="space-y-0 pb-2">
             <CardDescription>Election Simulation</CardDescription>
             <CardTitle className="text-4xl tabular-nums">
-              Election Results
+              Bar Chart
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
               <BarChart
                 margin={{
-                  left: 0, // Adjust the margin to center the content within the card
+                  left: 0,
                   right: 0,
                 }}
                 data={formattedData}
@@ -109,9 +109,9 @@ function App() {
                   tickMargin={4}
                   tickFormatter={formatDate}
                 />
-                <ChartTooltip 
+                <ChartTooltip
                   content={
-                    <ChartTooltipContent 
+                    <ChartTooltipContent
                       indicator="dot"
                       labelFormatter={(value, payload) => {
                         if (payload && payload.length > 0) {
@@ -127,13 +127,12 @@ function App() {
                         </span>
                       ]}
                     />
-                  } 
+                  }
                   cursor={false}
-                  contentStyle={{ opacity: 1 }}
                 />
                 <ReferenceLine
                   y={50}
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="hsl(var(--foreground))"
                   strokeDasharray="3 3"
                   strokeWidth={1}
                 >
@@ -149,13 +148,102 @@ function App() {
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
             <CardDescription>
-              This chart shows the win probabilities for Donald Trump and Kamala Harris over time.
+              This bar chart shows the win probabilities for Donald Trump and Kamala Harris over time.
+            </CardDescription>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="w-full max-w-[25rem]">
+        <Card className="rounded-lg">
+          <CardHeader className="space-y-0 pb-2">
+            <CardDescription>Election Simulation</CardDescription>
+            <CardTitle className="text-4xl tabular-nums">
+              Line Chart
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig}>
+              <LineChart
+                margin={{
+                  left: 0,
+                  right: 0,
+                }}
+                data={formattedData}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="timestamp"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={formatDate}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      indicator="dot"
+                      labelFormatter={(value, payload) => {
+                        if (payload && payload.length > 0) {
+                          return formatDate(payload[0].payload.timestamp);
+                        }
+                        return '';
+                      }}
+                      itemSorter={(a) => -a.value}
+                      formatter={(value, name) => [
+                        `${formatPercentage(value)}`,
+                        <span key={name} style={{ color: chartConfig[name as keyof typeof chartConfig].color }}>
+                          {chartConfig[name as keyof typeof chartConfig].label}
+                        </span>
+                      ]}
+                    />
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Donald Trump"
+                  stroke={chartConfig["Donald Trump"].color}
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Kamala Harris"
+                  stroke={chartConfig["Kamala Harris"].color}
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <ReferenceLine
+                  y={50}
+                  stroke="hsl(var(--foreground))"
+                  strokeDasharray="3 3"
+                  strokeWidth={1}
+                >
+                  <Label
+                    position="insideBottomLeft"
+                    value="50% Threshold"
+                    offset={10}
+                    fill="hsl(var(--foreground))"
+                  />
+                </ReferenceLine>
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-1">
+            <CardDescription>
+              This line chart shows the win probabilities for Donald Trump and Kamala Harris over time.
             </CardDescription>
           </CardFooter>
         </Card>
       </div>
     </div>
-  )  
+  )
 }
 
 export default App
