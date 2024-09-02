@@ -69,26 +69,10 @@ function App() {
     "Kamala Harris": result.win_probabilities["Kamala Harris"] * 100,
   }))
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip bg-background p-2 border border-border rounded-md shadow-md">
-          <p className="label font-semibold">{formatDate(label)}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={`item-${index}`} style={{ color: entry.color }}>
-              {entry.name}: {formatPercentage(entry.value)}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <div className="chart-wrapper mx-auto flex max-w-6xl flex-col flex-wrap items-start justify-center gap-6 p-6 sm:flex-row sm:p-8">
-      <div className="grid w-full gap-6 sm:grid-cols-2 lg:max-w-[22rem] lg:grid-cols-1 xl:max-w-[25rem]">
-        <Card className="lg:max-w-md">
+    <div className="chart-wrapper mx-auto flex max-w-6xl flex-col items-center justify-center gap-6 p-6 sm:p-8">
+      <div className="w-full max-w-xl mx-auto"> {/* Use max-w-xl or another width you prefer */}
+        <Card className="mx-auto"> {/* Ensure the card itself is centered */}
           <CardHeader className="space-y-0 pb-2">
             <CardDescription>Election Simulation</CardDescription>
             <CardTitle className="text-4xl tabular-nums">
@@ -99,8 +83,8 @@ function App() {
             <ChartContainer config={chartConfig}>
               <BarChart
                 margin={{
-                  left: -4,
-                  right: -4,
+                  left: 0, // Adjust the margin to center the content within the card
+                  right: 0,
                 }}
                 data={formattedData}
               >
@@ -125,7 +109,28 @@ function App() {
                   tickMargin={4}
                   tickFormatter={formatDate}
                 />
-                <ChartTooltip content={<CustomTooltip />} cursor={false} />
+                <ChartTooltip 
+                  content={
+                    <ChartTooltipContent 
+                      indicator="dot"
+                      labelFormatter={(value, payload) => {
+                        if (payload && payload.length > 0) {
+                          return formatDate(payload[0].payload.timestamp);
+                        }
+                        return '';
+                      }}
+                      itemSorter={(a) => -a.value}
+                      formatter={(value, name) => [
+                        `${formatPercentage(value)}`,
+                        <span key={name} style={{ color: chartConfig[name as keyof typeof chartConfig].color }}>
+                          {chartConfig[name as keyof typeof chartConfig].label}
+                        </span>
+                      ]}
+                    />
+                  } 
+                  cursor={false}
+                  contentStyle={{ opacity: 1 }}
+                />
                 <ReferenceLine
                   y={50}
                   stroke="hsl(var(--muted-foreground))"
@@ -150,7 +155,7 @@ function App() {
         </Card>
       </div>
     </div>
-  )
+  )  
 }
 
 export default App
