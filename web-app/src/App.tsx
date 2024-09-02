@@ -57,7 +57,7 @@ const chartConfig = {
 
 function App() {
   const [chartData, setChartData] = useState<SimulationResult[]>([])
-  const [daysToShow, setDaysToShow] = useState(7) // Default to showing 7 days
+  const [daysToShow, setDaysToShow] = useState(10) // Default to showing 10 days
 
   useEffect(() => {
     fetch('/simulation_results.json')
@@ -191,9 +191,23 @@ function App() {
   )
 
   return (
-    <div className="chart-wrapper mx-auto flex max-w-6xl flex-col items-center justify-center gap-6 p-6 sm:p-8">
-      <div className="w-full max-w-[25rem]">
-        <Card className="rounded-lg">
+    <div className="min-h-screen bg-background bg-gray-100">
+      <div 
+        className="bg-blue-100 w-full" 
+        style={{
+          maxWidth: '672px', 
+          margin: '0 auto', 
+          padding: '2rem 1rem',
+        }}
+      >
+        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight text-center lg:text-5xl mb-6">
+          2024 Election Simulation
+        </h1>
+        <p className="leading-7 text-center mb-8">
+          This simulation provides daily win probabilities for the potential candidates in the upcoming 2024 US Presidential Election. The data is based on various factors and is updated regularly to reflect the latest trends and developments.
+        </p>
+        
+        <Card className="rounded-lg mb-10">
           <CardHeader className="space-y-0 pb-2">
             <CardDescription>Election Simulation</CardDescription>
             <CardTitle className="text-4xl tabular-nums">
@@ -228,17 +242,6 @@ function App() {
                   onValueChange={(value) => setDaysToShow(value[0])}
                 />
               </div>
-              {/* Option 2: Custom class with !important */}
-              {/* <div className="slider-container">
-                <Slider
-                  id="days-slider"
-                  min={5}
-                  max={formattedData.length}
-                  step={1}
-                  value={[daysToShow]}
-                  onValueChange={(value) => setDaysToShow(value[0])}
-                />
-              </div> */}
             </div>
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
@@ -247,6 +250,24 @@ function App() {
             </CardDescription>
           </CardFooter>
         </Card>
+        
+        <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
+          Understanding the Data
+        </h2>
+        <p className="leading-7 [&:not(:first-child)]:mt-6">
+          The chart above displays the average daily win probabilities for Donald Trump and Kamala Harris. These probabilities are calculated based on various factors including polling data, economic indicators, and historical trends.
+        </p>
+        <h3 className="mt-8 scroll-m-20 text-2xl font-semibold tracking-tight">
+          Key Observations
+        </h3>
+        <ul className="my-6 ml-6 list-disc [&>li]:mt-2">
+          <li>The 50% threshold line represents an equal chance of winning for both candidates.</li>
+          <li>Probabilities above 50% indicate a higher likelihood of winning for that candidate.</li>
+          <li>Daily fluctuations are normal and can be influenced by current events and news cycles.</li>
+        </ul>
+        <p className="leading-7 [&:not(:first-child)]:mt-6">
+          Remember, these simulations are based on current data and projections. The actual election outcome may differ as we get closer to the election date and more information becomes available.
+        </p>
       </div>
     </div>
   )
