@@ -132,15 +132,15 @@ function App() {
                 />
                 <ReferenceLine
                   y={50}
-                  stroke="hsl(var(--foreground))"
+                  stroke="hsl(var(--foreground) / 0.3)"
                   strokeDasharray="3 3"
-                  strokeWidth={1}
+                  strokeWidth={2}
                 >
                   <Label
                     position="insideBottomLeft"
                     value="50% Threshold"
                     offset={10}
-                    fill="hsl(var(--foreground))"
+                    fill="hsl(var(--foreground) / 0.5)"
                   />
                 </ReferenceLine>
               </BarChart>
