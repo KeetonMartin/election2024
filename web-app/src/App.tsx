@@ -34,6 +34,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { formatDate, formatPercentage } from "./utils/formatters" // Add this import
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
+import { Slider } from "./components/ui/slider"
 
 interface SimulationResult {
   timestamp: string
@@ -56,6 +57,7 @@ const chartConfig = {
 
 function App() {
   const [chartData, setChartData] = useState<SimulationResult[]>([])
+  const [daysToShow, setDaysToShow] = useState(7) // Default to showing 7 days
 
   useEffect(() => {
     fetch('/simulation_results.json')
@@ -84,6 +86,12 @@ function App() {
     })).sort((a, b) => a.timestamp - b.timestamp)
   }, [chartData])
 
+  const filteredData = useMemo(() => {
+    const cutoffDate = new Date()
+    cutoffDate.setDate(cutoffDate.getDate() - daysToShow)
+    return formattedData.filter(data => data.timestamp >= cutoffDate.getTime())
+  }, [formattedData, daysToShow])
+
   const renderChart = (ChartComponent: typeof BarChart | typeof LineChart) => (
     <ChartContainer config={chartConfig}>
       <ChartComponent
@@ -91,7 +99,7 @@ function App() {
           left: 0,
           right: 0,
         }}
-        data={formattedData}
+        data={filteredData}
       >
         {ChartComponent === LineChart && <CartesianGrid vertical={false} />}
         <XAxis
@@ -205,10 +213,37 @@ function App() {
                 {renderChart(LineChart)}
               </TabsContent>
             </Tabs>
+            <div className="mt-4 flex flex-col items-center">
+              <label htmlFor="days-slider" className="block text-sm font-medium text-gray-700 mb-2">
+                Days to show: {daysToShow}
+              </label>
+              {/* Option 1: Inline styles */}
+              <div style={{ width: '256px' }}>
+                <Slider
+                  id="days-slider"
+                  min={5}
+                  max={formattedData.length}
+                  step={1}
+                  value={[daysToShow]}
+                  onValueChange={(value) => setDaysToShow(value[0])}
+                />
+              </div>
+              {/* Option 2: Custom class with !important */}
+              {/* <div className="slider-container">
+                <Slider
+                  id="days-slider"
+                  min={5}
+                  max={formattedData.length}
+                  step={1}
+                  value={[daysToShow]}
+                  onValueChange={(value) => setDaysToShow(value[0])}
+                />
+              </div> */}
+            </div>
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
             <CardDescription>
-              This chart shows the win probabilities for Donald Trump and Kamala Harris over time.
+              This chart shows the average daily win probabilities for Donald Trump and Kamala Harris over the last {daysToShow} days.
             </CardDescription>
           </CardFooter>
         </Card>
