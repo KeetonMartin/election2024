@@ -31,7 +31,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "./components/ui/chart"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "./components/ui/separator"
 import { formatDate, formatPercentage } from "./utils/formatters" // Add this import
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
 import { Slider } from "./components/ui/slider"
@@ -58,12 +58,27 @@ const chartConfig = {
 function App() {
   const [chartData, setChartData] = useState<SimulationResult[]>([])
   const [daysToShow, setDaysToShow] = useState(10) // Default to showing 10 days
+  const [error, setError] = useState<string | null>(null) // Add this line
 
   useEffect(() => {
     fetch('/simulation_results.json')
-      .then(response => response.json())
-      .then(data => setChartData(data))
-      .catch(error => console.error('Error fetching data:', error))
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.length === 0) {
+          throw new Error('No data received');
+        }
+        setChartData(data);
+        console.log('Data loaded:', data); // Add this line
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setError(error.message); // Add this line
+      });
   }, [])
 
   const formattedData = useMemo(() => {
@@ -92,9 +107,14 @@ function App() {
     return formattedData.filter(data => data.timestamp >= cutoffDate.getTime())
   }, [formattedData, daysToShow])
 
+  console.log('Formatted data:', formattedData);
+  console.log('Filtered data:', filteredData);
+
   const renderChart = (ChartComponent: typeof BarChart | typeof LineChart) => (
     <ChartContainer config={chartConfig}>
       <ChartComponent
+        width={600}
+        height={300}
         margin={{
           left: 0,
           right: 0,
@@ -191,9 +211,9 @@ function App() {
   )
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-4/5 h-4/5 max-w-4xl">
-        <Card className="w-full h-full overflow-auto">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-2xl mx-auto">
           <CardHeader className="space-y-0 pb-2">
             <CardDescription>Election Simulation</CardDescription>
             <CardTitle className="text-4xl tabular-nums">
@@ -201,33 +221,41 @@ function App() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="bar">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="bar">Bar Chart</TabsTrigger>
-                <TabsTrigger value="line">Line Chart</TabsTrigger>
-              </TabsList>
-              <TabsContent value="bar">
-                {renderChart(BarChart)}
-              </TabsContent>
-              <TabsContent value="line">
-                {renderChart(LineChart)}
-              </TabsContent>
-            </Tabs>
-            <div className="mt-4 flex flex-col items-center">
-              <label htmlFor="days-slider" className="block text-sm font-medium text-gray-700 mb-2">
-                Days to show: {daysToShow}
-              </label>
-              <div className="w-64">
-                <Slider
-                  id="days-slider"
-                  min={5}
-                  max={formattedData.length}
-                  step={1}
-                  value={[daysToShow]}
-                  onValueChange={(value) => setDaysToShow(value[0])}
-                />
-              </div>
-            </div>
+            {error ? (
+              <div className="text-red-500">Error: {error}</div>
+            ) : filteredData.length === 0 ? (
+              <div>No data available</div>
+            ) : (
+              <>
+                <Tabs defaultValue="bar">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="bar">Bar Chart</TabsTrigger>
+                    <TabsTrigger value="line">Line Chart</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="bar">
+                    {renderChart(BarChart)}
+                  </TabsContent>
+                  <TabsContent value="line">
+                    {renderChart(LineChart)}
+                  </TabsContent>
+                </Tabs>
+                <div className="mt-4 flex flex-col items-center">
+                  <label htmlFor="days-slider" className="block text-sm font-medium text-gray-700 mb-2">
+                    Days to show: {daysToShow}
+                  </label>
+                  <div className="w-64">
+                    <Slider
+                      id="days-slider"
+                      min={5}
+                      max={formattedData.length}
+                      step={1}
+                      value={[daysToShow]}
+                      onValueChange={(value) => setDaysToShow(value[0])}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </CardContent>
           <CardFooter className="flex-col items-start gap-1">
             <CardDescription>
