@@ -47,6 +47,9 @@ jobs:
         cd web-app
         npm run build
 
+    - name: List build directory contents
+      run: ls -R docs/webapp
+
     - name: Commit changes
       run: |
         git config --global user.name 'github-actions[bot]'
