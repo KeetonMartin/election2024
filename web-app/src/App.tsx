@@ -25,7 +25,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "./components/ui/chart"
-import { Separator } from "./components/ui/separator"
+// import { Separator } from "./components/ui/separator"
 import { formatDate, formatPercentage } from "./utils/formatters" // Add this import
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
 import { Slider } from "./components/ui/slider"
@@ -135,7 +135,7 @@ function App() {
           content={
             <ChartTooltipContent
               indicator="dot"
-              labelFormatter={(value, payload) => {
+              labelFormatter={(_value, payload) => {
                 if (payload && payload.length > 0) {
                   return formatDate(payload[0].payload.timestamp);
                 }
