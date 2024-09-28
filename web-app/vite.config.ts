@@ -16,7 +16,7 @@ export default defineConfig({
       ]
     })
   ],
-  base: '/election2024/webapp/',  // Add this line
+  base: '/election2024/webapp/',
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

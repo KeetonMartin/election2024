@@ -55,7 +55,7 @@ function App() {
   const [error, setError] = useState<string | null>(null) // Add this line
 
   useEffect(() => {
-    fetch('/simulation_results.json')
+    fetch('./simulation_results.json')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
