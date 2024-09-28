@@ -1,17 +1,11 @@
 import { useEffect, useState, useMemo } from "react"
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
   Label,
-  LabelList,
   Line,
   LineChart,
-  PolarAngleAxis,
-  RadialBar,
-  RadialBarChart,
   Rectangle,
   ReferenceLine,
   XAxis,
@@ -147,9 +141,9 @@ function App() {
                 }
                 return '';
               }}
-              itemSorter={(a) => -a.value}
+              itemSorter={(a) => -(a.value ?? 0)}
               formatter={(value, name) => [
-                `${formatPercentage(value)}`,
+                `${formatPercentage(Number(value))}`,
                 <span key={name} style={{ color: chartConfig[name as keyof typeof chartConfig].color }}>
                   {chartConfig[name as keyof typeof chartConfig].label}
                 </span>
