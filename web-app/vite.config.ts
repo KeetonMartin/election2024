@@ -26,4 +26,8 @@ export default defineConfig({
       plugins: [tailwindcss],
     },
   },
+  build: {
+    outDir: '../docs/webapp',
+    emptyOutDir: true,
+  },
 })
