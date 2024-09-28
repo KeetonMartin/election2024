@@ -30,6 +30,9 @@ import { formatDate, formatPercentage } from "./utils/formatters" // Add this im
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs"
 import { Slider } from "./components/ui/slider"
 
+// Add this constant at the top of your file, outside of the App function
+const DEBATE_DATE = new Date('2024-09-10').getTime()
+
 interface SimulationResult {
   timestamp: string
   win_probabilities: {
@@ -122,6 +125,8 @@ function App() {
           axisLine={false}
           tickMargin={8}
           tickFormatter={formatDate}
+          domain={['dataMin', 'dataMax']}  // Add this line
+          type="number"  // Add this line
         />
         {ChartComponent === LineChart && (
           <YAxis
@@ -198,6 +203,22 @@ function App() {
             value="50% Threshold"
             offset={10}
             fill="hsl(var(--foreground) / 0.5)"
+          />
+        </ReferenceLine>
+        
+        {/* Add this ReferenceLine for the debate */}
+        <ReferenceLine
+          x={DEBATE_DATE}
+          stroke="hsl(var(--foreground) / 0.3)"
+          strokeDasharray="10 5"
+          strokeWidth={2}
+        >
+          <Label
+            position="top"
+            value="Kamala-Trump Debate"
+            offset={-100}
+            fill="hsl(var(--foreground) / 0.8)"
+            angle={-90}
           />
         </ReferenceLine>
       </ChartComponent>

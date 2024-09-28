@@ -1,5 +1,5 @@
 export const formatDate = (timestamp: number): string => {
-  console.log('timestamp', timestamp)
+  // console.log('timestamp', timestamp)
     return new Date(timestamp).toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
