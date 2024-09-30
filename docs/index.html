@@ -4,12 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Election 2024 Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+        .button-container {
+            display: flex;
+            gap: 1rem;
+        }
+        .button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Election 2024 Analysis</h1>
-    <ul>
-        <li><a href="./choropleth/">Choropleth Map</a></li>
-        <li><a href="./webapp/">Interactive Dashboard</a></li>
-    </ul>
+    <div class="button-container">
+        <a href="./choropleth/" class="button">Choropleth Map</a>
+        <a href="./webapp/" class="button">Interactive Dashboard</a>
+    </div>
 </body>
 </html>
