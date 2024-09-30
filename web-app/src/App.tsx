@@ -54,7 +54,7 @@ const chartConfig = {
 
 function App() {
   const [chartData, setChartData] = useState<SimulationResult[]>([])
-  const [daysToShow, setDaysToShow] = useState(10) // Default to showing 10 days
+  const [daysToShow, setDaysToShow] = useState(30) // Default to showing this many days
   const [error, setError] = useState<string | null>(null) // Add this line
 
   useEffect(() => {
