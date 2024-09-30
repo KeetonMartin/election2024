@@ -64,5 +64,5 @@ def plot_choropleth(pivot_avg_data: pd.DataFrame, simulation_summary: pd.Series,
         template='plotly_dark',
         coloraxis_showscale=False
     )
-    pyo.plot(fig, filename='index.html', auto_open=False)
+    pyo.plot(fig, filename='docs/choropleth/index.html', auto_open=False)
     fig.show()
