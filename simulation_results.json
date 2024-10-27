@@ -746,5 +746,16 @@
       "Donald Trump": 263.144,
       "Kamala Harris": 274.856
     }
+  },
+  {
+    "timestamp": "2024-10-27 00:30:36",
+    "win_probabilities": {
+      "Donald Trump": 0.458,
+      "Kamala Harris": 0.54
+    },
+    "simulation_summary": {
+      "Donald Trump": 262.494,
+      "Kamala Harris": 275.506
+    }
   }
 ]
