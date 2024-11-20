@@ -1,9 +1,9 @@
 name: Update President Polls and Build Web App
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 0 * * *' # This runs the workflow every day at midnight
+  workflow_dispatch: # Keep this to allow manual triggers if needed
 
 permissions:
   contents: write
